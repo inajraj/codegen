@@ -12,17 +12,11 @@ def doSelect(lblName, selName, f):
     f.write(getSelectBox(selName))
     f.write("</div>")
    
-def doInput(lblName, inputName, f):
+def doInput(lblName, inputName, inputType, f):
+    
     f.write("<div class='row'>\n")
     f.write(getLabel(lblName,inputName))
-    f.write(getInputBox(inputName, "Text"))
-    f.write("</div>\n")
-
-def doDate(lblName, dateName,f):
-    #Date alone
-    f.write("<div class='row'>\n")
-    f.write(getLabel(lblName,dateName))
-    f.write(getInputBox(dateName, "Date"))
+    f.write(getInputBox(inputName, inputType))
     f.write("</div>\n")
 
 def doSel2(lblName1, selName1, lblName2, selName2, f):   
@@ -33,21 +27,16 @@ def doSel2(lblName1, selName1, lblName2, selName2, f):
     f.write(getSelectBox(selName2))
     f.write("</div>") 
 
-def doInput2(lblName1, inputName1, lblName2, inputName2, f):
+def doInput2(lblName1, inputName1, lblName2, inputName2, inputType1, inputType2, f):
+    print(inputName1,inputName2,inputType1,inputType2)
     f.write("<div class='row'>\n")
     f.write(getLabel(lblName1,inputName1))
-    f.write(getInputBox(inputName1, "Text")) 
+    f.write(getInputBox(inputName1, inputType1))
     f.write(getLabel(lblName2,inputName2))
-    f.write(getInputBox(inputName2, "Text"))
+    f.write(getInputBox(inputName2, inputType2))
     f.write("</div>\n")
 
-def doDate2(lblName1, dateName1, lblName2, dateName2,f):
-    f.write("<div class='row'>\n")
-    f.write(getLabel(lblName1,dateName1))
-    f.write(getInputBox(dateName1, "Date")) 
-    f.write(getLabel(lblName2,dateName2))
-    f.write(getInputBox(dateName2, "Date"))
-    f.write("</div>\n")
+
 
 def doSelandInput(lblName1, selName, lblName2, inputName,inputType, f):
     # combo box and text box combo
@@ -96,7 +85,11 @@ def getSelectBox(selName):
     return tmpstr
 
 def getInputBox(inputName, inputType):
-    temstr = ("\t<div class='col-sm-4'>\n"
-     "\t\t<input type='" + inputType +"' class='form-control' id='" + inputName + "' name='" + inputName + "'>\n" 
-    "\t</div>\n")
-    return temstr
+     if inputType == 'T':
+         inputType = 'Text'
+     if inputType == 'DT':
+         inputType = "Date"
+     temstr = ("\t<div class='col-sm-4'>\n"
+          "\t\t<input type='" + inputType +"' class='form-control' id='" + inputName + "' name='" + inputName + "'>\n" 
+          "\t</div>\n")
+     return temstr
