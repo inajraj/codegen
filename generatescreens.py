@@ -9,13 +9,7 @@ from google.auth.transport.requests import Request
 
 from commonUtils import doSelect, doInput, doSel2, doInput2, doSelandInput, doInputandSel
 
-# If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
-# The ID and range of a sample spreadsheet.
-#SPREADSHEET_ID = '1WmIHC5ic4IFE4b5uEXgfxEXm1GW-I7aW80xKS7rDcsA'
-SPREADSHEET_ID = '11TbcyAGEpZv0hqNJd5En8HRGG5yF1MBIjnC9EcE_pX4'   
-RANGE_NAME = 'Screens'
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
@@ -44,42 +38,20 @@ def createTwoSet(firstControl,secondControl,f):
 
 
 
-def main():
-    """Shows basic usage of the Sheets API.
-    Prints values from a sample spreadsheet.
-    """
-    creds = None
-    # The file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'client_id.json', SCOPES)
-            creds = flow.run_local_server()
-        # Save the credentials for the next run
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-
-    service = build('sheets', 'v4', credentials=creds)
+def RunScreenGenerator(sheetID, rangeName, sheet):
+   
 
     # Call the Sheets API
-    sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-                                range=RANGE_NAME).execute()
+    
+    result = sheet.values().get(spreadsheetId=sheetID,
+                                range=rangeName).execute()
     values = result.get('values', [])
 
     if not values:
         print('No data found.')
     else:
         for metaRow in values:
-            res=sheet.values().get(spreadsheetId=SPREADSHEET_ID,
+            res=sheet.values().get(spreadsheetId=sheetID,
                                 range=metaRow[0]).execute()
             tablerows = res.get('values', [])
             print(metaRow[0])
@@ -96,7 +68,4 @@ def main():
                         else:
                             createOneSet(firstControl,f)
                 f.close()    
-                            
-        
-if __name__ == '__main__':
-    main()
+                        

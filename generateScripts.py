@@ -25,7 +25,7 @@ sys.path.append(file_dir)
 sfile = open("snippets.js","a+")
 
 def createLoadDataSnippets(controlInfo):
-    sfile.write("$('#" + controlInfo[2] + "').val(myObj['" + controlInfo[2]+"']);\n")
+    sfile.write("$('#" + controlInfo[1] + "').val(myObj['" + controlInfo[0]+"']);\n")
 
 def createSaveFormCodeSnippets(controlInfo):
     sfile.write("if ($('# " + controlInfo[2] + "').val().trim() != \"\")")
@@ -119,32 +119,19 @@ def main():
         print('No data found.')
     else:
         for metaRow in values:
+            print(metaRow)
             res=sheet.values().get(spreadsheetId=SPREADSHEET_ID,
                                 range=metaRow[0]).execute()
             tablerows = res.get('values', [])
             #generateInsertScript(tablerows,metaRow[0])
-            generateUpdateScript(tablerows,metaRow[0],"EmpID")
-            print(metaRow[0])
+            # generateUpdateScript(tablerows,metaRow[0],"EmpID")
+            #print(metaRow[0])
             if (metaRow[1] == 'Y'):
                 #f= open(metaRow[0] + "-auto-script.js","w")
                 for tdrow in tablerows:
                     print(tdrow, len(tdrow))
                     if len(tdrow) > 0:
-                        firstControl = tdrow[0].split('~')
-                        if len(tdrow) > 1:
-                            #we have two controls in the same row
-                            secondControl = tdrow[1].split('~')
-                            #createValidationScriptText(firstControl,f,"N")
-                            #createValidationScriptText(secondControl,f,"N")
-                            #createSaveFormCodeSnippets(firstControl)
-                            #createSaveFormCodeSnippets(secondControl)
-                            #createLoadDataSnippets(firstControl)
-                        else:
-                            #createValidationScriptText(firstControl,f,"Y")
-                            #createSaveFormCodeSnippets(firstControl)
-                            #createLoadDataSnippets(firstControl)
-                            print("D")
-               # f.close()    
+                        createLoadDataSnippets(tdrow)
                             
         
 if __name__ == '__main__':
