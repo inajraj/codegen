@@ -126,16 +126,40 @@ def generateInsertStringforPhp(sheet,sheetId,rangeName):
                 if ("NOT NULL" in tdRow[1]):
                     qStr = qStr + tdRow[0] + ","
                 else:
-                    qStr = qStr +  "\" . checkBlank(\""+ tdRow[0] + "\", $results) . \" , "
+                    qStr = qStr +  "\" . checkBlank(\""+ tdRow[0] + "\", $results) . \""
             qStr = qStr.rstrip(',') + ")" 
             qStr = qStr + " Values ('\""
             for tdRow in tablerows:
                 if ("NOT NULL" in tdRow[1]):
                     qStr = qStr + " . $results[\'" + tdRow[0] + "\'] . \"','\""
                 else:
-                    qStr = qStr +  " . removeBlank($results[\'" + tdRow[0] + "\']) . \"' ,'\""
+                    qStr = qStr[:-3] +  "\" . removeBlank($results[\'" + tdRow[0] + "\']) . \" ,'\""
 
             qStr = qStr[:-5] + "\")\"" 
+            print(qStr)
+
+def generateUpdateStringforPhp(sheet,sheetId,rangeName):
+    
+    result = sheet.values().get(spreadsheetId=sheetId,
+                                range=rangeName).execute()
+    values = result.get('values', [])
+    
+    for metaRow in values:
+        res=sheet.values().get(spreadsheetId=sheetId,
+                                range=metaRow[0]).execute()
+        tablerows = res.get('values', [])
+        whereStr = ""
+        if (metaRow[3] == 'Y'):
+            qStr = "\"update " + metaRow[0] + " SET "
+            for tdRow in tablerows:
+                if ("PK" in tdRow[2]):
+                    whereStr = ". \" where " + tdRow[0] + " = '\" . $results[\'" + tdRow[0] + "\'] . \"'\" "
+                if ("NOT NULL" in tdRow[1]):
+                    qStr = qStr  + tdRow[0] +  " = '\" . $results[\'" + tdRow[0] + "\'] . \"', "
+                else:
+                    qStr = qStr +  "\" . checkBlank(" + tdRow[0] + ", $results[\'" + tdRow[0] + "\']) .\" "
+            qStr = qStr[:-3] + "'\" " + whereStr
+            
             print(qStr)
 
      
