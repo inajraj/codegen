@@ -10,7 +10,7 @@ from google.auth.transport.requests import Request
 from generateRules import RunRulesGenerator
 from generateScreens import RunScreenGenerator
 from generateValidateSnippets import RunScreenValidationsGenerator
-from generateDDL import RunDDLGenerator
+from generateDDL import RunDDLGenerator, generateInsertStringforPhp
 
 from commonUtils import doSelect, doInput, doSel2, doInput2, doSelandInput, doInputandSel
 
@@ -92,6 +92,7 @@ def RunMasterSheet(SHEET_ID, RANGE_NAME, sheet):
                     RunScreenValidationsGenerator(sheet, sheetId, rangeName)
                 elif  (genType == 'Tables'):
                     RunDDLGenerator(sheet, sheetId, rangeName)
+                    generateInsertStringforPhp(sheet,sheetId, rangeName)
                     
            
                             

@@ -109,3 +109,33 @@ def RunDDLGenerator(sheet, sheetId, rangeName):
                     runScript(qStr, mydb)
                     print(qStr)
 
+def generateInsertStringforPhp(sheet,sheetId,rangeName):
+    
+    result = sheet.values().get(spreadsheetId=sheetId,
+                                range=rangeName).execute()
+    values = result.get('values', [])
+    
+    for metaRow in values:
+        res=sheet.values().get(spreadsheetId=sheetId,
+                                range=metaRow[0]).execute()
+        tablerows = res.get('values', [])
+      
+        if (metaRow[3] == 'Y'):
+            qStr = "\"insert into " + metaRow[0] + "("
+            for tdRow in tablerows:
+                if ("NOT NULL" in tdRow[1]):
+                    qStr = qStr + tdRow[0] + ","
+                else:
+                    qStr = qStr +  "\" . checkBlank(\""+ tdRow[0] + "\", $results) . \" , "
+            qStr = qStr.rstrip(',') + ")" 
+            qStr = qStr + " Values ('\""
+            for tdRow in tablerows:
+                if ("NOT NULL" in tdRow[1]):
+                    qStr = qStr + " . $results[\'" + tdRow[0] + "\'] . \"','\""
+                else:
+                    qStr = qStr +  " . removeBlank($results[\'" + tdRow[0] + "\']) . \"' ,'\""
+
+            qStr = qStr[:-5] + "\")\"" 
+            print(qStr)
+
+     
