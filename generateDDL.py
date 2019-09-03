@@ -4,7 +4,7 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-import mysql.connector
+import mysql.connector as mariadb
 
 
 from dbUtils import runScript
@@ -23,8 +23,7 @@ def formFieldString(row):
     # need to see size is there or not
     
 
-def RunDDLGenerator(sheet, sheetId, rangeName):
-    
+def RunDDLGenerator(sheet, sheetId, rangeName):    
 
     #get the db credentials
     result = sheet.values().get(spreadsheetId=sheetId,
@@ -42,7 +41,7 @@ def RunDDLGenerator(sheet, sheetId, rangeName):
 
     print(host, user, passwd, database)
         
-    mydb = mysql.connector.connect(
+    mydb = mariadb.connect(
             host=host,
             user=user,
             passwd=passwd,
@@ -102,12 +101,12 @@ def RunDDLGenerator(sheet, sheetId, rangeName):
                             if fld[1][i] != '' and 'ID' not in fld[1][i]: #it it is empty do not add the field
                                 instr = instr + fld[0][0] + ","
                                 if fld[0][2] == 'D':
-                                    valstr = valstr + "'" +  convertdate(fld[1][i]) + "',"
+                                    valstr = valstr + "'" +  fld[1][i] + "',"
                                 else:
                                     valstr = valstr + "'" +  fld[1][i] + "',"
                     qStr = instr[:-1]+") " + valstr[:-1] + ")"
                     runScript(qStr, mydb)
-                    print(qStr)
+                   
 
 def generateInsertStringforPhp(sheet,sheetId,rangeName):
     

@@ -92,7 +92,7 @@ def RunMasterSheet(SHEET_ID, RANGE_NAME, sheet):
                     RunScreenValidationsGenerator(sheet, sheetId, rangeName)
                 elif  (genType == 'Tables'):
                     RunDDLGenerator(sheet, sheetId, rangeName)
-                    #generateInsertStringforPhp(sheet,sheetId, rangeName)
+                    generateInsertStringforPhp(sheet,sheetId, rangeName)
                     generateUpdateStringforPhp(sheet,sheetId, rangeName)
                     
            
