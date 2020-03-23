@@ -3,6 +3,9 @@ import pickle
 import os.path
 import sys
 
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -19,7 +22,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
 #SPREADSHEET_ID = '1WmIHC5ic4IFE4b5uEXgfxEXm1GW-I7aW80xKS7rDcsA'
-SPREADSHEET_ID = '1XV9F3FFtydBnTGY5_1V-cqEqnEBngwAD4VI2_daxxOs'   
+SPREADSHEET_ID = '1Ws7qV4Gs7aGBFn2SogAmPaelFTT9fm1TGBESaVPNUM4' 
 RANGE_NAME = 'Master'
 
 file_dir = os.path.dirname(__file__)
@@ -29,7 +32,15 @@ def main():
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
     """
-    creds = None
+
+    from google.oauth2 import service_account
+
+    scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name('client_id.json', scope)
+    client = gspread.authorize(creds)
+
+    sheet = client.open_by_key('SPREADSHEET_ID')
+
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
@@ -37,14 +48,14 @@ def main():
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
     # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
+    if not creds:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'client_id.json', SCOPES)
-            creds = flow.run_local_server()
-        # Save the credentials for the next run
+                scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+                creds = ServiceAccountCredentials.from_json_keyfile_name('client_id.json', scope)
+                client = gspread.authorize(creds)
+         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
 
@@ -71,7 +82,7 @@ def main():
 def RunMasterSheet(SHEET_ID, RANGE_NAME, sheet):
     # here we are opening the master sheet of the project where various 
     # sheets are listed for automation (screens, rules etc)
-    
+    print(RANGE_NAME)
     result = sheet.values().get(spreadsheetId=SHEET_ID,
                                 range=RANGE_NAME).execute()
     values = result.get('values', [])

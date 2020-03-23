@@ -23,89 +23,79 @@ def formFieldString(row):
     # need to see size is there or not
     
 
-def RunDDLGenerator(sheet, sheetId, rangeName):    
+def RunDDLGenerator(wb, sheetId, CreateFlag, DataFlag):    
 
     #get the db credentials
-    result = sheet.values().get(spreadsheetId=sheetId,
-                                range='DBCredentials').execute()
-    values = result.get('values', [])
-    for metaRow in values:
-        if (metaRow[0] == 'host'):
-            host = metaRow[1]
-        elif (metaRow[0] == 'user'):
-            user = metaRow[1]
-        elif (metaRow[0] == 'password'):
-            passwd = metaRow[1]
-        elif (metaRow[0]=='database'):
-            database = metaRow[1]
-
+    ws = wb['MetaData']
+    
+    #get the values from column H and I from row 1 to 4
+    host = ws.cell(row=1,column=9).value
+    user = ws.cell(2,9).value
+    passwd = ws.cell(3,9).value
+    database = ws.cell(4,9).value   
+   
     print(host, user, passwd, database)
         
     mydb = mariadb.connect(
-            host=host,
-            user=user,
-            passwd=passwd,
-            database=database
-        )
+             host=host,
+             user=user,
+             passwd=passwd,
+             database=database
+         )
 
-    result = sheet.values().get(spreadsheetId=sheetId,
-                                range=rangeName).execute()
-    values = result.get('values', [])
+    #print (sheetId)
+    ws = wb[sheetId]
 
-    if not values:
-        print('No data found.')
-    else:
-        for metaRow in values:
-            print (metaRow)
-            res=sheet.values().get(spreadsheetId=sheetId,
-                                range=metaRow[0]).execute()
-            tablerows = res.get('values', [])
-            print(metaRow[0])
-            if (metaRow[1] == 'Y'):
-                #create the table only if the indicator is Y
-                #drop the table first
-                str = "DROP TABLE IF EXISTS " + metaRow[0]
-                runScript(str,mydb)
-                finalStr = "CREATE TABLE `" + metaRow[0] + "` ("
-                for tdrow in tablerows:
-                    
-                    finalStr  = finalStr + "`" + tdrow[0] + "` " + tdrow[1] + ","
-                    print(tdrow)
-                    
-                    #check this row has primary key column
-                    if ('PK' in tdrow[2]):
-                        pkString = "PRIMARY KEY (`" + tdrow[0] + "`))"
-                #need to add primary key - to check the loop again
-                runScript(finalStr+pkString, mydb)
-                print(finalStr+pkString)
-            if (metaRow[2] == 'Y'):
-                #load sample data 
-                #truncate tables
-                runScript("TRUNCATE TABLE `" + metaRow[0] + "`", mydb)
+    if (CreateFlag == 'Y'):
+         #create the table only if the indicator is Y
+         #drop the table first
+             pkString = ""
+             str = "DROP TABLE IF EXISTS " + sheetId
+             runScript(str,mydb)
+             finalStr = "CREATE TABLE `" + sheetId + "` ("
+             i = 2
+             while i <= ws.max_row:
+                 print(i)
+                 print(ws.cell(row=i,column=2).value)
+                 finalStr  = finalStr + "`" + ws.cell(row=i,column=2).value + "` " + ws.cell(row=i,column=3).value + ","
+                 #print(len(ws.cell(i,2).value))
+                 #check this row has primary key column
+                 if (ws.cell(row=i,column=4).value == 'PK'):
+                     pkString = "PRIMARY KEY (`" + ws.cell(row=i,column=2).value + "`))"
+                 i = i + 1
+                 #need to add primary key - to check the loop again
+             runScript(finalStr+pkString, mydb)
+                 
+             print(finalStr+pkString)
 
-                #range name will be TableName.SampleData
-                DataRange = metaRow[0] + ".SampleData"
-                res=sheet.values().get(spreadsheetId=sheetId,
-                                range=DataRange).execute()
-                dataRows = res.get('values', [])
+            # if (metaRow[2] == 'Y'):
+            #     #load sample data 
+            #     #truncate tables
+            #     runScript("TRUNCATE TABLE `" + metaRow[0] + "`", mydb)
+
+            #     #range name will be TableName.SampleData
+            #     DataRange = metaRow[0] + ".SampleData"
+            #     res=sheet.values().get(spreadsheetId=sheetId,
+            #                     range=DataRange).execute()
+            #     dataRows = res.get('values', [])
                 
-                #get the columns (max columns will do)
-                nColumns = max(list(map(len,dataRows)))
-                print(nColumns)
-                queryList = []
-                for i in range(nColumns):
-                    instr = "INSERT INTO `" + metaRow[0] + "` ("
-                    valstr = "VALUES ("
-                    for fld in zip(tablerows,dataRows): # tuple of two lists
-                        if i < len(fld[1]): #check if the second list has members for index i
-                            if fld[1][i] != '' and 'ID' not in fld[1][i]: #it it is empty do not add the field
-                                instr = instr + fld[0][0] + ","
-                                if fld[0][2] == 'D':
-                                    valstr = valstr + "'" +  fld[1][i] + "',"
-                                else:
-                                    valstr = valstr + "'" +  fld[1][i] + "',"
-                    qStr = instr[:-1]+") " + valstr[:-1] + ")"
-                    runScript(qStr, mydb)
+            #     #get the columns (max columns will do)
+            #     nColumns = max(list(map(len,dataRows)))
+            #     print(nColumns)
+            #     queryList = []
+            #     for i in range(nColumns):
+                    # instr = "INSERT INTO `" + metaRow[0] + "` ("
+                    # valstr = "VALUES ("
+                    # for fld in zip(tablerows,dataRows): # tuple of two lists
+                    #     if i < len(fld[1]): #check if the second list has members for index i
+                    #         if fld[1][i] != '' and 'ID' not in fld[1][i]: #it it is empty do not add the field
+                    #             instr = instr + fld[0][0] + ","
+                    #             if fld[0][2] == 'D':
+                    #                 valstr = valstr + "'" +  fld[1][i] + "',"
+                    #             else:
+                    #                 valstr = valstr + "'" +  fld[1][i] + "',"
+                    # qStr = instr[:-1]+") " + valstr[:-1] + ")"
+                    # runScript(qStr, mydb)
                    
 
 def generateInsertStringforPhp(sheet,sheetId,rangeName):
