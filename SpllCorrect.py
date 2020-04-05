@@ -2,67 +2,36 @@ import os
 import shutil
 import time
 
-from  xltodict import replaceWords
+from  xltodict import replaceWords, loadDictionary
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'client_id.json'
 
-def detect_text(filename, inputPath, outputPath):
-    """Detects text in the file."""
-    from google.cloud import vision
-    import io
-    client = vision.ImageAnnotatorClient()
-
-    path = inputPath + "/" + filename
-    
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = vision.types.Image(content=content)
-
-    response = client.text_detection(image=image)
-    texts = response.text_annotations
-    print('Texts:')
-
-    #get the output filename from path
-    outFile = outputPath + "/" + filename.replace('.jpg','.txt')
-    for text in texts:
-        print('\n"{}"'.format(text.description))
-        with open(outFile, 'w',encoding="utf-8") as file:
-            file.write(text.description)
-        break
-        #vertices = (['({},{})'.format(vertex.x, vertex.y)
-                    #for vertex in text.bounding_poly.vertices])
-
-        #print('bounds: {}'.format(','.join(vertices)))
-
-    if response.error.message:
-        raise Exception(
-            '{}\nFor more info on error messages, check: '
-            'https://cloud.google.com/apis/design/errors'.format(
-                response.error.message))
-
-
-
 def writeToFile(itemList, filename):
-    with open(filename, "w") as f:
+    with open(filename, "w",encoding="utf-8") as f:
         f.write("\n".join(itemList))
         
 
 
 if __name__ == '__main__':
 
-    BasePath = 'C:/Users/User1/Downloads/OEBS2701026/OEBS2701026'
+
+    df = loadDictionary()
+    BasePath = 'C:/Users/User1/Downloads/HtmlConv/OEBS2701056/output'
     inputPath = BasePath + '/input'
     outputPath = BasePath + '/output'
     #move the firstfile from basepath to inputpath
 
     files = []
 
-    files =  open(BasePath + "/"+ "OEBS2701026ws91670.txt", 'r',encoding="utf-8").read().split('\n')
-    print(files)
+    files =  open(BasePath + "/"+ "OEBS2701056ws96501.txt", 'r',encoding="utf-8").read().split('\n')
+    
     #detect_text('OEBS2701026ws91504.jpg')
-    replaceWords(files)
-    #writeToFile(files, "temp.txt")
+    for index, value  in enumerate(files):
+        files[index] = replaceWords(value,df)
+        print(files[index])
+        
+    
+    writeToFile(files, "temp.txt")
 
    
     #for filename in os.listdir(BasePath):

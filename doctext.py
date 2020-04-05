@@ -21,7 +21,7 @@ class FeatureType(Enum):
     SYMBOL = 5
 
 
-BasePath = 'C:/Users/user1/Downloads/HtmlConv/OEBS2701034'
+BasePath = 'C:/Users/user1/Downloads/HtmlConv/OEBS2701074'
 #BasePath = 'C:/Users/user1/Documents/codegen/input'
 
 def draw_boxes(image, bounds, color):
@@ -128,6 +128,6 @@ if __name__ == '__main__':
             get_document_bounds(inputPath, FeatureType.BLOCK)
             shutil.move(BasePath + "/" + filename, BasePath + "/" + "processed")
             shutil.move(BasePath + "/" + filename[:-3] + "txt", BasePath + "/" + "output")
-            time.sleep(1)
+            #time.sleep(1)
     # [END vision_document_text_tutorial_run_application]
 # [END vision_document_text_tutorial]
