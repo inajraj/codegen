@@ -1,13 +1,13 @@
 from __future__ import print_function
-import pickle
+
 import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 import mysql.connector as mariadb
 
+import openpyxl
 
 from dbUtils import runScript
+
+
 
 
 def formFieldString(row):
@@ -49,55 +49,62 @@ def RunDDLGenerator(wb, sheetId, CreateFlag, DataFlag):
     if (CreateFlag == 'Y'):
          #create the table only if the indicator is Y
          #drop the table first
-             pkString = ""
-             str = "DROP TABLE IF EXISTS " + sheetId
-             runScript(str,mydb)
-             finalStr = "CREATE TABLE `" + sheetId + "` ("
-             i = 2
-             while i <= ws.max_row:
-                 print(i)
-                 print(ws.cell(row=i,column=2).value)
-                 finalStr  = finalStr + "`" + ws.cell(row=i,column=2).value + "` " + ws.cell(row=i,column=3).value + ","
-                 #print(len(ws.cell(i,2).value))
-                 #check this row has primary key column
-                 if (ws.cell(row=i,column=4).value == 'PK'):
-                     pkString = "PRIMARY KEY (`" + ws.cell(row=i,column=2).value + "`))"
-                 i = i + 1
-                 #need to add primary key - to check the loop again
-             runScript(finalStr+pkString, mydb)
-                 
-             print(finalStr+pkString)
+        pkString = ""
+        str = "DROP TABLE IF EXISTS " + sheetId
+        runScript(str,mydb)
+        finalStr = "CREATE TABLE `" + sheetId + "` ("
+        i = 2
+        while i <= ws.max_row:
+            print(i)
+            print(ws.cell(row=i,column=2).value)
+            finalStr  = finalStr + "`" + ws.cell(row=i,column=2).value + "` " + ws.cell(row=i,column=3).value + ","
+            #print(len(ws.cell(i,2).value))
+            #check this row has primary key column
+            if (ws.cell(row=i,column=4).value == 'PK'):
+                pkString = "PRIMARY KEY (`" + ws.cell(row=i,column=2).value + "`))"
+            i = i + 1
+            #need to add primary key - to check the loop again
+        runScript(finalStr+pkString, mydb)
+            
+        print(finalStr+pkString)
+    if (DataFlag == 'Y'):
+        #col 1 has tablename
+        tableName = ws.cell(row=2,column=1).value
+        basesql = "INSERT " + tableName
+        #col 2 has fieldnames
+        fields = "("
+        i = 2
+        while i <= ws.max_row:
+            #skip ID
+            if ws.cell(row=i,column=2).value != 'ID': #skip ID auto generated
+                fields = fields + ws.cell(row=i,column=2).value + ","
+            i = i+1
+        fields = fields[:-1] + ")"
+        print(fields)
+        basesql = basesql + fields
+        #need to generate insert statements for every DATA column
+        #start looking for column header 'Data'
+        col = 4 
+        while col <= ws.max_column:
+            print(col)
+            if (ws.cell(row=1,column=col).value == 'Data'):
+                values = "('"
+                i = 2 
+                while i <= ws.max_row:
+                    if ws.cell(row=i,column=col).value != 'ID': #skip ID as it is auto generated
+                        if ws.cell(row=i,column=col).value != None:
+                            values = values + ws.cell(row=i,column=col).value + "','" 
+                        else
+                            values = values + 'NULL','"
+                    i = i + 1
+                values = values[:-2] + ")"  
+                print (values)   
+                sql = basesql + "  VALUES " + values
+                print(sql)
+                runScript(sql, mydb)
+            col = col + 1    
 
-            # if (metaRow[2] == 'Y'):
-            #     #load sample data 
-            #     #truncate tables
-            #     runScript("TRUNCATE TABLE `" + metaRow[0] + "`", mydb)
-
-            #     #range name will be TableName.SampleData
-            #     DataRange = metaRow[0] + ".SampleData"
-            #     res=sheet.values().get(spreadsheetId=sheetId,
-            #                     range=DataRange).execute()
-            #     dataRows = res.get('values', [])
-                
-            #     #get the columns (max columns will do)
-            #     nColumns = max(list(map(len,dataRows)))
-            #     print(nColumns)
-            #     queryList = []
-            #     for i in range(nColumns):
-                    # instr = "INSERT INTO `" + metaRow[0] + "` ("
-                    # valstr = "VALUES ("
-                    # for fld in zip(tablerows,dataRows): # tuple of two lists
-                    #     if i < len(fld[1]): #check if the second list has members for index i
-                    #         if fld[1][i] != '' and 'ID' not in fld[1][i]: #it it is empty do not add the field
-                    #             instr = instr + fld[0][0] + ","
-                    #             if fld[0][2] == 'D':
-                    #                 valstr = valstr + "'" +  fld[1][i] + "',"
-                    #             else:
-                    #                 valstr = valstr + "'" +  fld[1][i] + "',"
-                    # qStr = instr[:-1]+") " + valstr[:-1] + ")"
-                    # runScript(qStr, mydb)
-                   
-
+    
 def generateInsertStringforPhp(sheet,sheetId,rangeName):
     
     result = sheet.values().get(spreadsheetId=sheetId,

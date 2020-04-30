@@ -28,7 +28,7 @@ rowCount = sheet.max_row
 
 i = 2
 while i <=  rowCount:
-    if sheet['C' + str(i)].value == 'Y':
+    if (sheet['C' + str(i)].value == 'Y' or sheet['D' + str(i)].value == 'Y'):
         sheetID = sheet['B' + str(i)].value
         print(sheetID)
         RunDDLGenerator(wb,  sheet['B' + str(i)].value, sheet['C' + str(i)].value, sheet['D' + str(i)].value)
