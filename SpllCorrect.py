@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     files = []
 
-    files =  open(BasePath + "/"+ "OEBS2701056ws96501.txt", 'r',encoding="utf-8").read().split('\n')
+    files =  open(BasePath + "/"+ "OEBS2701056ws96498.txt", 'r',encoding="utf-8").read().split('\n')
     
     #detect_text('OEBS2701026ws91504.jpg')
     for index, value  in enumerate(files):
